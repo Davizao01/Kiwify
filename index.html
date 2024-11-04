@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador de Tarefas</title>
+    <title>Jogo de Adivinhação de Números</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,20 +11,22 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
             height: 100vh;
             margin: 0;
         }
-        #taskManager {
+        #game {
             background: white;
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 400px;
-        }
-        h2 {
+            width: 300px;
             text-align: center;
         }
-        input[type="text"] {
+        h2 {
+            margin: 0;
+        }
+        input[type="number"], select {
             width: calc(100% - 22px);
             padding: 10px;
             margin: 10px 0;
@@ -45,106 +47,82 @@
         button:hover {
             background-color: #45a049;
         }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .completed {
-            text-decoration: line-through;
-            color: gray;
-        }
-        .edit-btn, .delete-btn {
-            margin-left: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            padding: 5px 10px;
-        }
-        .edit-btn {
-            background-color: #2196F3;
-            color: white;
-        }
-        .delete-btn {
-            background-color: #f44336;
-            color: white;
+        .result, .score {
+            margin: 10px 0;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
 
-<div id="taskManager">
-    <h2>Gerenciador de Tarefas</h2>
-    <input type="text" id="taskInput" placeholder="Nova tarefa">
-    <button onclick="addTask()">Adicionar Tarefa</button>
-    <ul id="taskList"></ul>
+<div id="game">
+    <h2>Jogo de Adivinhação</h2>
+    <label for="difficulty">Dificuldade:</label>
+    <select id="difficulty">
+        <option value="easy">Fácil</option>
+        <option value="medium">Médio</option>
+        <option value="hard">Difícil</option>
+    </select>
+    <button onclick="startGame()">Iniciar Jogo</button>
+    <div class="score"></div>
+    <input type="number" id="guessInput" placeholder="Adivinhe o número" disabled>
+    <button onclick="checkGuess()" disabled>Adivinhar</button>
+    <div class="result"></div>
 </div>
 
 <script>
-    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    let randomNumber;
+    let attempts;
+    let maxAttempts;
+    let score = 0;
 
-    function renderTasks() {
-        const taskList = document.getElementById('taskList');
-        taskList.innerHTML = '';
-        tasks.forEach((task, index) => {
-            const li = document.createElement('li');
-            li.className = task.completed ? 'completed' : '';
-            li.innerHTML = `
-                <span>${task.name}</span>
-                <div>
-                    <button class="edit-btn" onclick="editTask(${index})">Editar</button>
-                    <button class="delete-btn" onclick="deleteTask(${index})">Remover</button>
-                    <button class="complete-btn" onclick="toggleComplete(${index})">${task.completed ? 'Desmarcar' : 'Concluir'}</button>
-                </div>
-            `;
-            taskList.appendChild(li);
-        });
+    function startGame() {
+        const difficulty = document.getElementById('difficulty').value;
+        switch (difficulty) {
+            case 'easy':
+                randomNumber = Math.floor(Math.random() * 10) + 1; // 1 a 10
+                maxAttempts = 5;
+                break;
+            case 'medium':
+                randomNumber = Math.floor(Math.random() * 50) + 1; // 1 a 50
+                maxAttempts = 4;
+                break;
+            case 'hard':
+                randomNumber = Math.floor(Math.random() * 100) + 1; // 1 a 100
+                maxAttempts = 3;
+                break;
+        }
+        attempts = 0;
+        document.getElementById('guessInput').disabled = false;
+        document.querySelector('button[onclick="checkGuess()"]').disabled = false;
+        document.querySelector('.result').textContent = '';
+        document.querySelector('.score').textContent = `Tentativas restantes: ${maxAttempts}`;
+        score = 0;
     }
 
-    function addTask() {
-        const taskInput = document.getElementById('taskInput');
-        if (taskInput.value.trim() !== '') {
-            tasks.push({ name: taskInput.value.trim(), completed: false });
-            taskInput.value = '';
-            saveTasks();
-            renderTasks();
+    function checkGuess() {
+        const guess = parseInt(document.getElementById('guessInput').value);
+        attempts++;
+        if (guess === randomNumber) {
+            score += (maxAttempts - attempts + 1) * 10; // Aumenta a pontuação
+            document.querySelector('.result').textContent = `Você acertou! Pontuação: ${score}`;
+            endGame();
         } else {
-            alert('Por favor, insira uma tarefa válida.');
+            if (attempts < maxAttempts) {
+                const hint = guess < randomNumber ? 'Tente um número maior.' : 'Tente um número menor.';
+                document.querySelector('.result').textContent = hint;
+                document.querySelector('.score').textContent = `Tentativas restantes: ${maxAttempts - attempts}`;
+            } else {
+                document.querySelector('.result').textContent = `Você perdeu! O número era ${randomNumber}.`;
+                endGame();
+            }
         }
     }
 
-    function editTask(index) {
-        const newName = prompt('Editar tarefa:', tasks[index].name);
-        if (newName !== null && newName.trim() !== '') {
-            tasks[index].name = newName.trim();
-            saveTasks();
-            renderTasks();
-        }
+    function endGame() {
+        document.getElementById('guessInput').disabled = true;
+        document.querySelector('button[onclick="checkGuess()"]').disabled = true;
     }
-
-    function deleteTask(index) {
-        tasks.splice(index, 1);
-        saveTasks();
-        renderTasks();
-    }
-
-    function toggleComplete(index) {
-        tasks[index].completed = !tasks[index].completed;
-        saveTasks();
-        renderTasks();
-    }
-
-    function saveTasks() {
-        localStorage.setItem('tasks', JSON.stringify(tasks));
-    }
-
-    window.onload = renderTasks;
 </script>
 
 </body>
