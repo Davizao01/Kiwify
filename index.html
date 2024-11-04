@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-Do List</title>
+    <title>Calculadora Simples</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,74 +14,92 @@
             height: 100vh;
             margin: 0;
         }
-        #app {
+        #calculator {
             background: white;
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            width: 320px;
         }
-        h2 {
-            text-align: center;
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-        li {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        button {
-            background: #ff4d4d;
-            border: none;
-            color: white;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        button:hover {
-            background: #ff1a1a;
-        }
-        input {
-            width: calc(100% - 70px);
-            padding: 10px;
+        input[type="text"] {
+            width: 100%;
+            height: 40px;
+            text-align: right;
+            font-size: 24px;
             border: 1px solid #ddd;
             border-radius: 5px;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        button {
+            width: 75px;
+            height: 50px;
+            font-size: 18px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .operator {
+            background-color: #2196F3;
+        }
+        .operator:hover {
+            background-color: #1e88e5;
         }
     </style>
 </head>
 <body>
 
-<div id="app">
-    <h2>To-Do List</h2>
-    <input type="text" id="taskInput" placeholder="Adicionar nova tarefa...">
-    <button onclick="addTask()">Adicionar</button>
-    <ul id="taskList"></ul>
+<div id="calculator">
+    <input type="text" id="result" disabled>
+    <div>
+        <button onclick="clearResult()">C</button>
+        <button onclick="appendToResult('7')">7</button>
+        <button onclick="appendToResult('8')">8</button>
+        <button onclick="appendToResult('9')">9</button>
+        <button class="operator" onclick="appendToResult('/')">/</button>
+    </div>
+    <div>
+        <button onclick="appendToResult('4')">4</button>
+        <button onclick="appendToResult('5')">5</button>
+        <button onclick="appendToResult('6')">6</button>
+        <button class="operator" onclick="appendToResult('*')">*</button>
+    </div>
+    <div>
+        <button onclick="appendToResult('1')">1</button>
+        <button onclick="appendToResult('2')">2</button>
+        <button onclick="appendToResult('3')">3</button>
+        <button class="operator" onclick="appendToResult('-')">-</button>
+    </div>
+    <div>
+        <button onclick="appendToResult('0')">0</button>
+        <button class="operator" onclick="calculateResult()">=</button>
+        <button class="operator" onclick="appendToResult('+')">+</button>
+    </div>
 </div>
 
 <script>
-    function addTask() {
-        const taskInput = document.getElementById('taskInput');
-        const taskText = taskInput.value;
-        if (taskText === '') return;
+    function appendToResult(value) {
+        const result = document.getElementById('result');
+        result.value += value;
+    }
 
-        const taskList = document.getElementById('taskList');
-        const li = document.createElement('li');
-        li.textContent = taskText;
+    function clearResult() {
+        document.getElementById('result').value = '';
+    }
 
-        const button = document.createElement('button');
-        button.textContent = 'Remover';
-        button.onclick = function () {
-            taskList.removeChild(li);
-        };
-
-        li.appendChild(button);
-        taskList.appendChild(li);
-        taskInput.value = '';
+    function calculateResult() {
+        const result = document.getElementById('result');
+        try {
+            result.value = eval(result.value);
+        } catch (error) {
+            result.value = 'Erro';
+        }
     }
 </script>
 
